@@ -18,7 +18,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _connectionStatus = 'Unknown';
   final NetworkInfo _networkInfo = NetworkInfo();
   String? wifiName,
       wifiBSSID,
@@ -53,14 +52,14 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         ),
         body: SafeArea(
-          minimum: const EdgeInsets.symmetric(horizontal: 8.0),
+          minimum: const EdgeInsets.all(8.0),
           child: Form(
               key: formKey,
               child: Column(
                 children: [
                   // wifi name
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
                       controller: txtWifiNameController,
                       decoration: InputDecoration(
@@ -69,13 +68,14 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(24.0),
                         ),
                         hintText: 'Enter Wifi SSID',
+                        label: Text('SSID'),
                       ),
                     ),
                   ),
 
                   // bssid
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
                       controller: txtWifiBSSIDController,
                       decoration: InputDecoration(
@@ -84,13 +84,14 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(24.0),
                         ),
                         hintText: 'Enter Wifi BSSID',
+                        label: Text('BSSID'),
                       ),
                     ),
                   ),
 
                   // password
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
                       controller: txtWifiPasswordController,
                       decoration: InputDecoration(
@@ -99,6 +100,7 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(24.0),
                         ),
                         hintText: 'Enter Wifi password',
+                        label: Text('Password'),
                       ),
                       obscureText: true,
                       validator: (value) {
@@ -113,97 +115,101 @@ class _HomePageState extends State<HomePage> {
                   // button
                   Visibility(
                     visible: !startProvisioning,
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () async {
-                          setState(() {
-                            startProvisioning = true;
-                          });
-                          if (formKey.currentState!.validate()) {
-                            // start smart config
-                            provisioner = Provisioner.espTouch();
-                            provisioner.listen((response) {
-                              log("Device ${response.bssidText} connected to WiFi!");
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  provisioner.stop();
-                                  return AlertDialog(
-                                    title: const Text('Result'),
-                                    content: Text(
-                                        'Device ${response.bssidText} connected to WiFi!'),
-                                    actions: [
-                                      FilledButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Ok'),
-                                      )
-                                    ],
-                                  );
-                                },
-                              ).then((value) {
-                                setState(() {
-                                  startProvisioning = false;
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48.0,
+                        child: FilledButton(
+                          onPressed: () async {
+                            setState(() {
+                              startProvisioning = true;
+                            });
+                            if (formKey.currentState!.validate()) {
+                              // start smart config
+                              provisioner = Provisioner.espTouch();
+                              provisioner.listen((response) {
+                                log("Device ${response.bssidText} connected to WiFi!");
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    provisioner.stop();
+                                    return AlertDialog(
+                                      title: const Text('Result'),
+                                      content: Text(
+                                          'Device ${response.bssidText} connected to WiFi!'),
+                                      actions: [
+                                        FilledButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Ok'),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                ).then((value) {
+                                  setState(() {
+                                    startProvisioning = false;
+                                  });
                                 });
                               });
-                            });
 
-                            try {
-                              await provisioner
-                                  .start(ProvisioningRequest.fromStrings(
-                                ssid: txtWifiNameController.text,
-                                bssid: txtWifiBSSIDController.text,
-                                password: txtWifiPasswordController.text,
-                              ));
+                              try {
+                                await provisioner
+                                    .start(ProvisioningRequest.fromStrings(
+                                  ssid: txtWifiNameController.text,
+                                  bssid: txtWifiBSSIDController.text,
+                                  password: txtWifiPasswordController.text,
+                                ));
 
-                              // If you are going to use this library in Flutter
-                              // this is good place to show some Dialog and wait for exit
-                              //
-                              // Or simply you can delay with Future.delayed function
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(16.0),
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                        Text('Please waiting for Wifi config.'),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                              //await Future.delayed(const Duration(seconds: 10));
-                            } catch (e, _) {
-                              log('e');
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Padding(
+                                            padding: EdgeInsets.all(16.0),
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                          Text(
+                                              'Please waiting for Wifi config.'),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              } catch (e, _) {
+                                log('e');
+                              }
                             }
-                          }
-                        },
-                        child: const Text('Start!'),
+                          },
+                          child: const Text('Start!'),
+                        ),
                       ),
                     ),
                   ),
 
                   Visibility(
                     visible: startProvisioning,
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          // stop smart config
-                          setState(() {
-                            startProvisioning = false;
-                          });
-                          provisioner.stop();
-                        },
-                        child: const Text('Stop!'),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48.0,
+                        child: FilledButton(
+                          onPressed: () {
+                            // stop smart config
+                            setState(() {
+                              startProvisioning = false;
+                            });
+                            provisioner.stop();
+                          },
+                          child: const Text('Stop!'),
+                        ),
                       ),
                     ),
                   )
@@ -315,16 +321,8 @@ class _HomePageState extends State<HomePage> {
       int len = tmpWifiName.length;
       tmpWifiName = tmpWifiName.substring(1, len - 1);
 
-      txtWifiNameController.text = '$tmpWifiName';
+      txtWifiNameController.text = tmpWifiName;
       txtWifiBSSIDController.text = '$wifiBSSID';
-
-      _connectionStatus = 'Wifi Name: $wifiName\n'
-          'Wifi BSSID: $wifiBSSID\n'
-          'Wifi IPv4: $wifiIPv4\n'
-          'Wifi IPv6: $wifiIPv6\n'
-          'Wifi Broadcast: $wifiBroadcast\n'
-          'Wifi Gateway: $wifiGatewayIP\n'
-          'Wifi Submask: $wifiSubmask\n';
     });
   }
 }

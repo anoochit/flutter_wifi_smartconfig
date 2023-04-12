@@ -4,10 +4,8 @@ Preferences prefs;
 
 // include wifi
 #include "WiFi.h"
-#define WiFi_rst 0
 String ssid;
 String pss;
-unsigned long rst_millis;
 
 // include PMS7003
 #include "PMS.h"
@@ -21,7 +19,8 @@ PMS::DATA data;
 // chip id
 uint32_t chipId = 0;
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
 
   // Show Chip id
@@ -34,9 +33,6 @@ void setup() {
   // Init preferences
   prefs.begin("esp32", false);
 
-  // Init smartconfig
-  pinMode(WiFi_rst, INPUT);
-
   // Get ssid and password
   ssid = prefs.getString("ssid", "");
   pss = prefs.getString("pss", "");
@@ -47,10 +43,9 @@ void setup() {
 
   // Connect to WiFi
   WiFi.begin(ssid.c_str(), pss.c_str());
-  delay(3500);  // Wait for a while till ESP connects to WiFi
+  delay(3500); // Wait for a while till ESP connects to WiFi
 
-
-  if (WiFi.status() != WL_CONNECTED)  // if WiFi is not connected
+  if (WiFi.status() != WL_CONNECTED) // if WiFi is not connected
   {
     // Init WiFi as Station, start SmartConfig
     WiFi.mode(WIFI_AP_STA);
@@ -58,7 +53,8 @@ void setup() {
 
     // Wait for SmartConfig packet from mobile
     Serial.println("Waiting for SmartConfig.");
-    while (!WiFi.smartConfigDone()) {
+    while (!WiFi.smartConfigDone())
+    {
       delay(500);
       Serial.print(".");
     }
@@ -68,7 +64,8 @@ void setup() {
 
     // Wait for WiFi to connect to AP
     Serial.println("Waiting for WiFi");
-    while (WiFi.status() != WL_CONNECTED) {
+    while (WiFi.status() != WL_CONNECTED)
+    {
       delay(500);
       Serial.print(".");
     }
@@ -94,8 +91,9 @@ void setup() {
     Serial.println("Store SSID & PSS in Flash");
     prefs.putString("ssid", ssid);
     prefs.putString("pss", pss);
-
-  } else {
+  }
+  else
+  {
     Serial.println("WiFi Connected");
 
     // Initialize PMS device.
@@ -104,24 +102,8 @@ void setup() {
   }
 }
 
-void loop() {
-
-  // Check rst for reset config
-  rst_millis = millis();
-  while (digitalRead(WiFi_rst) == LOW) {
-    // Wait till boot button is pressed
-    Serial.println("Press Reset Button");
-  }
-  // Check the button press time if it is greater than 3sec clear wifi cred and restart ESP
-  if (millis() - rst_millis >= 3000) {
-    Serial.println("Reseting the WiFi credentials");
-    prefs.putString("ssid", "");
-    prefs.putString("pss", "");
-    Serial.println("Wifi credentials erased");
-    Serial.println("Restarting the ESP");
-    delay(500);
-    ESP.restart();  // Restart ESP
-  }
+void loop()
+{
 
   Serial.println("Waking up, wait 30 seconds for stable readings...");
   pms.wakeUp();
@@ -131,7 +113,8 @@ void loop() {
   pms.requestRead();
 
   Serial.println("Wait max. 1 second for read...");
-  if (pms.readUntil(data)) {
+  if (pms.readUntil(data))
+  {
     Serial.print("PM 1.0 (ug/m3): ");
     Serial.println(data.PM_AE_UG_1_0);
 
@@ -140,13 +123,13 @@ void loop() {
 
     Serial.print("PM 10.0 (ug/m3): ");
     Serial.println(data.PM_AE_UG_10_0);
-  } else {
+  }
+  else
+  {
     Serial.println("No data.");
   }
 
   Serial.println("Going to sleep for 60 seconds.");
   pms.sleep();
   delay(60000);
-
-  
 }

@@ -167,10 +167,10 @@ class _HomePageState extends State<HomePage> {
                                 showDialog(
                                   context: context,
                                   builder: (context) {
-                                    return AlertDialog(
+                                    return const AlertDialog(
                                       content: Column(
                                         mainAxisSize: MainAxisSize.min,
-                                        children: const [
+                                        children: [
                                           Padding(
                                             padding: EdgeInsets.all(16.0),
                                             child: CircularProgressIndicator(),
